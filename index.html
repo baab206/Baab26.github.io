@@ -12,20 +12,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --blue: #3730D4;
-      --white: #FAFAF8;
-    }
-
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      background: var(--blue);
-    }
+    :root { --blue: #3730D4; --white: #FAFAF8; }
+    html, body { height: 100%; overflow: hidden; background: var(--blue); font-family: 'Barlow', sans-serif; }
 
     /* ═══════════════════════════════════════
-       INTRO SCREEN
+       INTRO
     ═══════════════════════════════════════ */
     #intro {
       position: fixed;
@@ -36,45 +27,155 @@
       align-items: center;
       justify-content: center;
       z-index: 100;
-      transition: opacity 0.9s ease;
-    }
-    #intro.fade-out {
-      opacity: 0;
-      pointer-events: none;
+      overflow: hidden;
     }
 
+    /* Scanline overlay */
+    #intro::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.07) 2px,
+        rgba(0,0,0,0.07) 4px
+      );
+      pointer-events: none;
+      z-index: 2;
+      animation: scanMove 8s linear infinite;
+    }
+    @keyframes scanMove {
+      0%   { background-position: 0 0; }
+      100% { background-position: 0 100px; }
+    }
+
+    /* Noise flicker overlay */
+    #intro::after {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 1;
+      animation: noiseShift 0.15s steps(1) infinite;
+    }
+    @keyframes noiseShift {
+      0%  { transform: translate(0,0); }
+      25% { transform: translate(-3px, 2px); }
+      50% { transform: translate(2px, -2px); }
+      75% { transform: translate(-1px, 3px); }
+      100%{ transform: translate(3px, -1px); }
+    }
+
+    /* The BAAB wordmark */
     .intro-logo {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(80px, 18vw, 220px);
-      letter-spacing: 0.08em;
+      font-size: clamp(90px, 20vw, 260px);
+      letter-spacing: 0.1em;
       color: var(--white);
-      opacity: 0;
-      transform: scale(0.96);
-      transition: opacity 0.9s ease, transform 0.9s ease;
       line-height: 1;
+      position: relative;
+      z-index: 10;
+      opacity: 0;
     }
-    .intro-logo.show {
-      opacity: 1;
-      transform: scale(1);
+
+    /* Glitch pseudo-elements on the logo */
+    .intro-logo::before,
+    .intro-logo::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+    }
+    .intro-logo::before {
+      color: rgba(255,100,100,0.7);
+      clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+      animation: glitchTop 4s infinite;
+    }
+    .intro-logo::after {
+      color: rgba(100,200,255,0.7);
+      clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+      animation: glitchBot 4s infinite;
+    }
+
+    @keyframes glitchTop {
+      0%,89%,91%,93%,100% { opacity: 0; transform: translate(0); }
+      90%  { opacity: 1; transform: translate(-4px, -2px); }
+      92%  { opacity: 1; transform: translate(4px, 1px); }
+    }
+    @keyframes glitchBot {
+      0%,89%,91%,93%,100% { opacity: 0; transform: translate(0); }
+      90%  { opacity: 1; transform: translate(4px, 2px); }
+      92%  { opacity: 1; transform: translate(-3px, -1px); }
+    }
+
+    /* Whole-logo flicker */
+    .intro-logo.flicker {
+      animation: logoFlicker 0.5s steps(1) forwards;
+    }
+    @keyframes logoFlicker {
+      0%   { opacity: 0; }
+      10%  { opacity: 1; }
+      18%  { opacity: 0; }
+      26%  { opacity: 1; }
+      32%  { opacity: 0; }
+      42%  { opacity: 1; }
+      50%  { opacity: 0.6; }
+      60%  { opacity: 1; }
+      70%  { opacity: 0.8; }
+      80%  { opacity: 1; }
+      90%  { opacity: 0.9; }
+      100% { opacity: 1; }
+    }
+
+    /* Horizontal glitch slice on whole intro */
+    #intro.glitch-slice {
+      animation: introSlice 0.3s steps(1);
+    }
+    @keyframes introSlice {
+      0%  { clip-path: inset(0 0 0 0); }
+      20% { clip-path: inset(30% 0 40% 0); transform: translateX(-6px); }
+      40% { clip-path: inset(60% 0 10% 0); transform: translateX(4px); }
+      60% { clip-path: inset(10% 0 70% 0); transform: translateX(-3px); }
+      80% { clip-path: inset(0 0 0 0); transform: translateX(2px); }
+      100%{ clip-path: inset(0 0 0 0); transform: translateX(0); }
     }
 
     .intro-line {
       font-family: 'Barlow', sans-serif;
       font-size: 11px;
-      letter-spacing: 0.28em;
+      letter-spacing: 0.3em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.55);
-      margin-top: 28px;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      color: rgba(255,255,255,0);
+      margin-top: 32px;
+      position: relative;
+      z-index: 10;
+      transition: color 0.6s ease;
     }
-    .intro-line.show {
-      opacity: 1;
-      transform: translateY(0);
+    .intro-line.show { color: rgba(255,255,255,0.5); }
+
+    /* Typing cursor on the tagline */
+    .intro-line .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: rgba(255,255,255,0.5);
+      vertical-align: middle;
+      margin-left: 3px;
+      animation: blink 0.8s steps(1) infinite;
+    }
+    @keyframes blink {
+      0%,49% { opacity: 1; }
+      50%,100%{ opacity: 0; }
     }
 
-    /* skip button */
     .intro-skip {
       position: absolute;
       bottom: 40px;
@@ -83,37 +184,38 @@
       font-size: 10px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.2);
       cursor: pointer;
       border: none;
       background: none;
       transition: color 0.2s;
       opacity: 0;
-      animation: fadeIn 0.5s ease forwards 3.5s;
+      z-index: 20;
+      animation: fadeIn 0.4s ease forwards 2s;
     }
-    .intro-skip:hover { color: rgba(255,255,255,0.6); }
+    .intro-skip:hover { color: rgba(255,255,255,0.55); }
+    @keyframes fadeIn { to { opacity: 1; } }
 
-    @keyframes fadeIn {
-      to { opacity: 1; }
+    /* Intro exit */
+    #intro.fade-out {
+      animation: introExit 0.8s ease forwards;
+    }
+    @keyframes introExit {
+      0%   { opacity: 1; transform: scale(1); }
+      40%  { opacity: 0.7; transform: scale(1.015); }
+      100% { opacity: 0; transform: scale(1.03); pointer-events: none; }
     }
 
     /* ═══════════════════════════════════════
-       MAIN PAGE (hidden until intro ends)
+       MAIN PAGE
     ═══════════════════════════════════════ */
     #page {
       opacity: 0;
-      transition: opacity 0.9s ease;
+      transition: opacity 1s ease;
       height: 100%;
     }
-    #page.show {
-      opacity: 1;
-    }
+    #page.show { opacity: 1; }
 
-    body {
-      font-family: 'Barlow', sans-serif;
-    }
-
-    /* ── PAGE LAYOUT ── */
     .page-inner {
       background: var(--blue);
       color: var(--white);
@@ -126,7 +228,6 @@
       height: 100vh;
     }
 
-    /* ── ANIMATED BG WORDMARK ── */
     .bg-word {
       position: absolute;
       font-family: 'Bebas Neue', sans-serif;
@@ -134,8 +235,7 @@
       line-height: 1;
       letter-spacing: 0.02em;
       color: rgba(255,255,255,0.035);
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
       user-select: none;
@@ -143,11 +243,10 @@
       animation: pulse 9s ease-in-out infinite;
     }
     @keyframes pulse {
-      0%, 100% { opacity: 0.035; transform: translate(-50%, -50%) scale(1); }
-      50%       { opacity: 0.065; transform: translate(-50%, -50%) scale(1.012); }
+      0%,100% { opacity: 0.035; transform: translate(-50%,-50%) scale(1); }
+      50%     { opacity: 0.065; transform: translate(-50%,-50%) scale(1.012); }
     }
 
-    /* ── TOP BAR ── */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -168,7 +267,6 @@
       color: rgba(255,255,255,0.45);
     }
 
-    /* ── MAIN CONTENT ── */
     .main {
       position: relative;
       z-index: 10;
@@ -186,10 +284,9 @@
       margin-bottom: 18px;
     }
 
-    /* ── MORPHING HEADLINE ── */
     .headline-wrap {
       position: relative;
-      min-height: calc(clamp(58px, 11vw, 138px) * 1.0 * 3);
+      min-height: calc(clamp(58px, 11vw, 138px) * 3);
       margin-bottom: 44px;
     }
     .headline-slide {
@@ -224,11 +321,7 @@
       margin-bottom: 48px;
     }
 
-    /* ── FORM ── */
-    .form-row {
-      display: flex;
-      max-width: 500px;
-    }
+    .form-row { display: flex; max-width: 500px; }
     .form-input {
       flex: 1;
       background: rgba(255,255,255,0.08);
@@ -244,10 +337,7 @@
       border-radius: 0;
     }
     .form-input::placeholder { color: rgba(255,255,255,0.3); }
-    .form-input:focus {
-      background: rgba(255,255,255,0.13);
-      border-color: rgba(255,255,255,0.55);
-    }
+    .form-input:focus { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.55); }
     .form-btn {
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 700;
@@ -272,7 +362,6 @@
       margin-top: 13px;
     }
 
-    /* ── SUCCESS ── */
     .success-msg {
       display: none;
       font-family: 'Bebas Neue', sans-serif;
@@ -293,28 +382,11 @@
       margin-top: 14px;
     }
 
-    /* ── COUNTER ── */
-    .counter-wrap {
-      margin-top: 52px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
+    .counter-wrap { margin-top: 52px; display: flex; align-items: center; gap: 18px; }
     .counter-line { height: 1px; width: 36px; background: rgba(255,255,255,0.2); }
-    .counter-text {
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-    }
-    .counter-num {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 20px;
-      letter-spacing: 0.08em;
-      color: rgba(255,255,255,0.65);
-    }
+    .counter-text { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+    .counter-num { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: rgba(255,255,255,0.65); }
 
-    /* ── BOTTOM BAR ── */
     .bottom-bar {
       display: flex;
       justify-content: space-between;
@@ -324,24 +396,11 @@
       border-top: 1px solid rgba(255,255,255,0.12);
       padding-top: 20px;
     }
-    .bottom-left {
-      font-size: 10px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.3);
-    }
+    .bottom-left { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
     .bottom-right { display: flex; gap: 28px; }
-    .bottom-right a {
-      font-size: 10px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.3);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
+    .bottom-right a { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.2s; }
     .bottom-right a:hover { color: rgba(255,255,255,0.75); }
 
-    /* ── MOBILE ── */
     @media (max-width: 640px) {
       .page-inner { padding: 24px 24px 28px; height: auto; min-height: 100vh; }
       #page { height: auto; overflow-y: auto; }
@@ -359,24 +418,21 @@
 
   <!-- ═══ INTRO ═══ -->
   <div id="intro">
-    <div class="intro-logo" id="introLogo">BAAB</div>
-    <p class="intro-line" id="introLine">Something is opening in Doha</p>
-    <button class="intro-skip" id="introSkip" onclick="skipIntro()">Skip</button>
+    <div class="intro-logo" id="introLogo" data-text="BAAB">BAAB</div>
+    <p class="intro-line" id="introLine"><span id="typeTarget"></span><span class="cursor" id="typeCursor"></span></p>
+    <button class="intro-skip" onclick="skipIntro()">Skip</button>
   </div>
 
   <!-- ═══ MAIN PAGE ═══ -->
   <div id="page">
     <div class="page-inner">
       <div class="bg-word">BAAB</div>
-
       <div class="top-bar">
         <div class="logo">BAAB</div>
         <div class="top-label">Doha — 2026</div>
       </div>
-
       <div class="main">
         <p class="eyebrow">Something is opening in Doha</p>
-
         <div class="headline-wrap">
           <h1 class="headline-slide active">A door<br>is about<br>to open.</h1>
           <h1 class="headline-slide">Doha keeps<br>its best things<br>very quiet.</h1>
@@ -385,40 +441,27 @@
           <h1 class="headline-slide">You will<br>not find this<br>on Google.</h1>
           <h1 class="headline-slide">See Doha<br>like nobody<br>has before.</h1>
         </div>
-
         <p class="subline">
           We are not ready to tell you everything yet.<br>
           The people on this list will be first to know — and first to get in.
         </p>
-
         <div id="formWrap">
           <form class="form-row" id="waitlistForm" onsubmit="handleSubmit(event)" novalidate>
-            <input
-              class="form-input"
-              type="email"
-              id="emailInput"
-              name="email"
-              placeholder="Your email address"
-              required
-              autocomplete="email"
-            />
+            <input class="form-input" type="email" id="emailInput" name="email" placeholder="Your email address" required autocomplete="email" />
             <button class="form-btn" type="submit">Join the List</button>
           </form>
           <p class="form-note">No spam. No data sold. Just the signal when the door opens.</p>
         </div>
-
         <div class="success-msg" id="successMsg">
           You are on the list.<br>We will be in touch.
           <span>Watch this space — and tell one person you trust.</span>
         </div>
-
         <div class="counter-wrap">
           <div class="counter-line"></div>
           <span class="counter-text">People already waiting</span>
           <span class="counter-num" id="counterNum">—</span>
         </div>
       </div>
-
       <div class="bottom-bar">
         <div class="bottom-left">© 2026 BAAB — Doha, Qatar</div>
         <div class="bottom-right">
@@ -430,39 +473,68 @@
   </div>
 
   <script>
-    // ═══ INTRO SEQUENCE ═══
-    // Step 1: Logo fades in at 400ms
-    // Step 2: Tagline fades in at 1.4s
-    // Step 3: Both hold for 1.8s
-    // Step 4: Intro fades out at 3.8s, page fades in simultaneously
+    const introEl   = document.getElementById('intro');
+    const introLogo = document.getElementById('introLogo');
+    const pageEl    = document.getElementById('page');
+    let introEnded  = false;
 
-    const introEl    = document.getElementById('intro');
-    const introLogo  = document.getElementById('introLogo');
-    const introLine  = document.getElementById('introLine');
-    const pageEl     = document.getElementById('page');
+    // ── 1. FLICKER-IN the logo at 300ms ──
+    setTimeout(() => {
+      introLogo.classList.add('flicker');
+    }, 300);
+
+    // ── 2. TYPE the tagline at 900ms ──
+    const tagline    = 'Something is opening in Doha';
+    const typeTarget = document.getElementById('typeTarget');
+    const typeCursor = document.getElementById('typeCursor');
+    let   charIdx    = 0;
+
+    function typeChar() {
+      if (charIdx < tagline.length) {
+        typeTarget.textContent += tagline[charIdx];
+        charIdx++;
+        // Slightly randomise typing speed for realism
+        setTimeout(typeChar, 45 + Math.random() * 35);
+      } else {
+        // Remove cursor after typing finishes
+        setTimeout(() => { typeCursor.style.display = 'none'; }, 800);
+      }
+    }
+    setTimeout(typeChar, 900);
+
+    // ── 3. Glitch slice at 2.4s ──
+    setTimeout(() => {
+      introEl.classList.add('glitch-slice');
+      setTimeout(() => introEl.classList.remove('glitch-slice'), 320);
+    }, 2400);
+
+    // ── 4. Second glitch at 3.1s ──
+    setTimeout(() => {
+      introEl.classList.add('glitch-slice');
+      setTimeout(() => introEl.classList.remove('glitch-slice'), 300);
+    }, 3100);
+
+    // ── 5. Reveal main page at 4s ──
+    setTimeout(revealPage, 4000);
 
     function revealPage() {
+      if (introEnded) return;
+      introEnded = true;
       introEl.classList.add('fade-out');
-      pageEl.classList.add('show');
-      setTimeout(() => { introEl.style.display = 'none'; }, 1000);
-      startMainPage();
+      setTimeout(() => {
+        introEl.style.display = 'none';
+        pageEl.classList.add('show');
+        startMainPage();
+      }, 600);
     }
 
     function skipIntro() { revealPage(); }
 
-    // Logo appears
-    setTimeout(() => introLogo.classList.add('show'), 400);
-    // Tagline appears
-    setTimeout(() => introLine.classList.add('show'), 1400);
-    // Transition to main page
-    setTimeout(revealPage, 3800);
-
-    // ═══ MAIN PAGE LOGIC ═══
+    // ═══ MAIN PAGE ═══
     function startMainPage() {
-      // Morphing headline
-      const slides = document.querySelectorAll('.headline-slide');
-      const total  = slides.length;
-      let current  = 0;
+      const slides  = document.querySelectorAll('.headline-slide');
+      const total   = slides.length;
+      let   current = 0;
 
       function nextSlide() {
         slides[current].classList.remove('active');
@@ -477,7 +549,6 @@
         setInterval(nextSlide, 3800);
       }, 3800);
 
-      // Counter
       let count = 47;
       const counterEl = document.getElementById('counterNum');
       function animateCounter(target, el) {
@@ -489,7 +560,7 @@
           if (c >= target) clearInterval(t);
         }, 35);
       }
-      setTimeout(() => animateCounter(count, counterEl), 600);
+      setTimeout(() => animateCounter(count, counterEl), 500);
       setInterval(() => {
         count += Math.floor(Math.random() * 2) + 1;
         counterEl.textContent = count;
@@ -497,14 +568,13 @@
     }
 
     // ═══ FORM ═══
-    let count = 47;
     function handleSubmit(e) {
       e.preventDefault();
       const email = document.getElementById('emailInput').value;
       if (!email || !email.includes('@')) return;
-      count += 1;
       const counterEl = document.getElementById('counterNum');
-      if (counterEl.textContent !== '—') counterEl.textContent = parseInt(counterEl.textContent) + 1;
+      const cur = parseInt(counterEl.textContent);
+      if (!isNaN(cur)) counterEl.textContent = cur + 1;
       document.getElementById('formWrap').style.display = 'none';
       document.getElementById('successMsg').style.display = 'block';
       // fetch('https://formspree.io/f/YOUR_FORM_ID', {
@@ -514,6 +584,5 @@
       // });
     }
   </script>
-
 </body>
 </html>
