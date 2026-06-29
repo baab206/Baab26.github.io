@@ -91,14 +91,27 @@
       justify-content: center;
     }
 
-    .eyebrow {
+    /* ── MORPHING EYEBROW ── */
+    .eyebrow-wrap {
+      height: 18px;
+      overflow: hidden;
+      margin-bottom: 22px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.3s;
+    }
+    .eyebrow-inner {
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.6s cubic-bezier(0.77, 0, 0.18, 1);
+    }
+    .eyebrow-line {
       font-size: 10px;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.55);
-      margin-bottom: 20px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.3s;
+      color: rgba(255,255,255,0.6);
+      line-height: 18px;
+      height: 18px;
+      white-space: nowrap;
     }
 
     .headline {
@@ -264,34 +277,6 @@
       color: rgba(255,255,255,0.8);
     }
 
-    /* ── TICKER (subtle, bottom of main) ── */
-    .ticker {
-      overflow: hidden;
-      margin-bottom: 0;
-      opacity: 0;
-      animation: fadeUp 0.9s ease forwards 1.0s;
-    }
-    .ticker-track {
-      display: flex;
-      animation: ticker 16s linear infinite;
-      white-space: nowrap;
-    }
-    .ticker-track span {
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.2);
-      padding: 0 32px;
-    }
-    .ticker-track .dot {
-      color: rgba(255,255,255,0.15);
-      padding: 0 4px;
-    }
-    @keyframes ticker {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
     /* ── ANIMATIONS ── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
@@ -328,7 +313,20 @@
 
   <!-- MAIN -->
   <div class="main">
-    <p class="eyebrow">Something is opening in Doha</p>
+
+    <!-- MORPHING EYEBROW -->
+    <div class="eyebrow-wrap">
+      <div class="eyebrow-inner" id="eyebrowInner">
+        <span class="eyebrow-line">The city has been keeping secrets</span>
+        <span class="eyebrow-line">Some doors don't appear on any map</span>
+        <span class="eyebrow-line">Doha is more interesting than it looks</span>
+        <span class="eyebrow-line">The people who know, don't talk about it</span>
+        <span class="eyebrow-line">You have to know someone</span>
+        <span class="eyebrow-line">Not everything in Doha is visible</span>
+        <span class="eyebrow-line">The city has been keeping secrets</span>
+      </div>
+    </div>
+
     <h1 class="headline">
       A door<br>
       is about<br>
@@ -367,24 +365,6 @@
     </div>
   </div>
 
-  <!-- TICKER -->
-  <div class="ticker">
-    <div class="ticker-track">
-      <span>Rooms you won't find on Google</span><span class="dot">◆</span>
-      <span>Conversations worth flying for</span><span class="dot">◆</span>
-      <span>The city beneath the city</span><span class="dot">◆</span>
-      <span>By invitation only</span><span class="dot">◆</span>
-      <span>Doha has been hiding this</span><span class="dot">◆</span>
-      <span>Not for everyone</span><span class="dot">◆</span>
-      <span>Rooms you won't find on Google</span><span class="dot">◆</span>
-      <span>Conversations worth flying for</span><span class="dot">◆</span>
-      <span>The city beneath the city</span><span class="dot">◆</span>
-      <span>By invitation only</span><span class="dot">◆</span>
-      <span>Doha has been hiding this</span><span class="dot">◆</span>
-      <span>Not for everyone</span><span class="dot">◆</span>
-    </div>
-  </div>
-
   <!-- BOTTOM BAR -->
   <div class="bottom-bar">
     <div class="bottom-left">© 2026 BAAB — Doha, Qatar</div>
@@ -395,7 +375,23 @@
   </div>
 
   <script>
-    // ── Animated counter (social proof — starts at a seed number, ticks up slowly) ──
+    // ── MORPHING EYEBROW ──
+    const eyebrowInner = document.getElementById('eyebrowInner');
+    const lineHeight = 18;
+    let currentLine = 0;
+    const totalLines = 6; // excludes the duplicate at end
+
+    function nextLine() {
+      currentLine = (currentLine + 1) % totalLines;
+      eyebrowInner.style.transform = `translateY(-${currentLine * lineHeight}px)`;
+    }
+
+    // Start cycling after initial page load animation settles
+    setTimeout(() => {
+      setInterval(nextLine, 2800);
+    }, 2000);
+
+    // ── COUNTER ──
     let count = 47;
     const counterEl = document.getElementById('counterNum');
 
@@ -409,34 +405,26 @@
       }, 35);
     }
 
-    // Start counter animation after page loads
     setTimeout(() => animateCounter(count, counterEl), 1400);
 
-    // Slowly tick up every 90s to create live feel
     setInterval(() => {
       count += Math.floor(Math.random() * 2) + 1;
       counterEl.textContent = count;
     }, 90000);
 
-    // ── Form submission ──
+    // ── FORM ──
     function handleSubmit(e) {
       e.preventDefault();
       const email = document.getElementById('emailInput').value;
       if (!email || !email.includes('@')) return;
 
-      const formWrap = document.getElementById('formWrap');
-      const successMsg = document.getElementById('successMsg');
-      const counterWrap = document.getElementById('counterWrap');
-
-      // Increment counter
       count += 1;
       counterEl.textContent = count;
 
-      // Show success
-      formWrap.style.display = 'none';
-      successMsg.style.display = 'block';
+      document.getElementById('formWrap').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
 
-      // In production: wire to Formspree
+      // Wire to Formspree when ready:
       // fetch('https://formspree.io/f/YOUR_FORM_ID', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
