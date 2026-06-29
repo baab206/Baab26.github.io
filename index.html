@@ -91,39 +91,50 @@
       justify-content: center;
     }
 
-    /* ── MORPHING EYEBROW ── */
-    .eyebrow-wrap {
-      height: 18px;
-      overflow: hidden;
-      margin-bottom: 22px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.3s;
-    }
-    .eyebrow-inner {
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.6s cubic-bezier(0.77, 0, 0.18, 1);
-    }
-    .eyebrow-line {
+    /* ── STATIC EYEBROW ── */
+    .eyebrow {
       font-size: 10px;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.6);
-      line-height: 18px;
-      height: 18px;
-      white-space: nowrap;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.3s;
     }
 
-    .headline {
+    /* ── MORPHING HEADLINE ── */
+    .headline-wrap {
+      position: relative;
+      /* Reserve space for the tallest headline so layout doesn't jump */
+      min-height: calc(clamp(52px, 10vw, 130px) * 0.88 * 3 + 8px);
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.5s;
+    }
+
+    .headline-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
       font-family: 'Barlow Condensed', sans-serif;
       font-weight: 900;
       font-size: clamp(52px, 10vw, 130px);
       line-height: 0.88;
       letter-spacing: -0.02em;
       color: var(--white);
-      margin-bottom: 40px;
       opacity: 0;
-      animation: fadeUp 0.9s ease forwards 0.5s;
+      transform: translateY(20px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+      pointer-events: none;
+    }
+    .headline-slide.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .headline-slide.exit {
+      opacity: 0;
+      transform: translateY(-20px);
     }
 
     .subline {
@@ -160,9 +171,7 @@
       -webkit-appearance: none;
       border-radius: 0;
     }
-    .form-input::placeholder {
-      color: rgba(255,255,255,0.35);
-    }
+    .form-input::placeholder { color: rgba(255,255,255,0.35); }
     .form-input:focus {
       background: rgba(255,255,255,0.15);
       border-color: rgba(255,255,255,0.6);
@@ -182,9 +191,7 @@
       transition: background 0.2s, color 0.2s;
       border-radius: 0;
     }
-    .form-btn:hover {
-      background: rgba(255,255,255,0.85);
-    }
+    .form-btn:hover { background: rgba(255,255,255,0.85); }
     .form-note {
       font-size: 10px;
       letter-spacing: 0.1em;
@@ -261,10 +268,7 @@
       text-transform: uppercase;
       color: rgba(255,255,255,0.35);
     }
-    .bottom-right {
-      display: flex;
-      gap: 28px;
-    }
+    .bottom-right { display: flex; gap: 28px; }
     .bottom-right a {
       font-size: 10px;
       letter-spacing: 0.18em;
@@ -273,14 +277,12 @@
       text-decoration: none;
       transition: color 0.2s;
     }
-    .bottom-right a:hover {
-      color: rgba(255,255,255,0.8);
-    }
+    .bottom-right a:hover { color: rgba(255,255,255,0.8); }
 
     /* ── ANIMATIONS ── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
-      to { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     /* ── MOBILE ── */
@@ -292,6 +294,7 @@
         min-height: 100vh;
       }
       html, body { overflow: visible; }
+      .headline-wrap { min-height: calc(clamp(52px, 14vw, 80px) * 0.88 * 3 + 8px); }
       .form-row { flex-direction: column; }
       .form-input { border-right: 1px solid rgba(255,255,255,0.25); border-bottom: none; }
       .form-btn { padding: 16px; }
@@ -302,36 +305,38 @@
 </head>
 <body>
 
-  <!-- GHOST BACKGROUND WORDMARK -->
   <div class="bg-word">BAAB</div>
 
-  <!-- TOP BAR -->
   <div class="top-bar">
     <div class="logo">BAAB</div>
     <div class="top-label">Doha — 2026</div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
+    <p class="eyebrow">Something is opening in Doha</p>
 
-    <!-- MORPHING EYEBROW -->
-    <div class="eyebrow-wrap">
-      <div class="eyebrow-inner" id="eyebrowInner">
-        <span class="eyebrow-line">The city has been keeping secrets</span>
-        <span class="eyebrow-line">Some doors don't appear on any map</span>
-        <span class="eyebrow-line">Doha is more interesting than it looks</span>
-        <span class="eyebrow-line">The people who know, don't talk about it</span>
-        <span class="eyebrow-line">You have to know someone</span>
-        <span class="eyebrow-line">Not everything in Doha is visible</span>
-        <span class="eyebrow-line">The city has been keeping secrets</span>
-      </div>
+    <!-- MORPHING HEADLINE -->
+    <div class="headline-wrap" id="headlineWrap">
+      <h1 class="headline-slide active" id="slide-0">
+        A door<br>is about<br>to open.
+      </h1>
+      <h1 class="headline-slide" id="slide-1">
+        Doha has<br>been hiding<br>something.
+      </h1>
+      <h1 class="headline-slide" id="slide-2">
+        Some rooms<br>don't appear<br>on any map.
+      </h1>
+      <h1 class="headline-slide" id="slide-3">
+        You have<br>to know<br>someone.
+      </h1>
+      <h1 class="headline-slide" id="slide-4">
+        The city<br>beneath<br>the city.
+      </h1>
+      <h1 class="headline-slide" id="slide-5">
+        Not for<br>everyone.<br>Maybe you.
+      </h1>
     </div>
 
-    <h1 class="headline">
-      A door<br>
-      is about<br>
-      to open.
-    </h1>
     <p class="subline">
       We are not ready to tell you everything yet.<br>
       But the people who are on this list will be the first to know — and the first to get in.
@@ -358,14 +363,13 @@
       <span>Watch this space — and tell one person you trust.</span>
     </div>
 
-    <div class="counter-wrap" id="counterWrap">
+    <div class="counter-wrap">
       <div class="counter-line"></div>
       <span class="counter-text">People already waiting</span>
       <span class="counter-num" id="counterNum">—</span>
     </div>
   </div>
 
-  <!-- BOTTOM BAR -->
   <div class="bottom-bar">
     <div class="bottom-left">© 2026 BAAB — Doha, Qatar</div>
     <div class="bottom-right">
@@ -375,38 +379,46 @@
   </div>
 
   <script>
-    // ── MORPHING EYEBROW ──
-    const eyebrowInner = document.getElementById('eyebrowInner');
-    const lineHeight = 18;
-    let currentLine = 0;
-    const totalLines = 6; // excludes the duplicate at end
+    // ── MORPHING HEADLINE ──
+    const totalSlides = 6;
+    let current = 0;
 
-    function nextLine() {
-      currentLine = (currentLine + 1) % totalLines;
-      eyebrowInner.style.transform = `translateY(-${currentLine * lineHeight}px)`;
+    function nextSlide() {
+      const slides = document.querySelectorAll('.headline-slide');
+      // Exit current
+      slides[current].classList.remove('active');
+      slides[current].classList.add('exit');
+      // After exit transition, clean up
+      const exiting = current;
+      setTimeout(() => {
+        slides[exiting].classList.remove('exit');
+      }, 600);
+      // Advance
+      current = (current + 1) % totalSlides;
+      // Enter next
+      slides[current].classList.add('active');
     }
 
-    // Start cycling after initial page load animation settles
+    // Start cycling after page settles — first change at 3.5s, then every 3.5s
     setTimeout(() => {
-      setInterval(nextLine, 2800);
-    }, 2000);
+      nextSlide();
+      setInterval(nextSlide, 3500);
+    }, 3500);
 
     // ── COUNTER ──
     let count = 47;
     const counterEl = document.getElementById('counterNum');
 
     function animateCounter(target, el) {
-      let current = 0;
+      let c = 0;
       const step = Math.ceil(target / 40);
-      const timer = setInterval(() => {
-        current = Math.min(current + step, target);
-        el.textContent = current;
-        if (current >= target) clearInterval(timer);
+      const t = setInterval(() => {
+        c = Math.min(c + step, target);
+        el.textContent = c;
+        if (c >= target) clearInterval(t);
       }, 35);
     }
-
     setTimeout(() => animateCounter(count, counterEl), 1400);
-
     setInterval(() => {
       count += Math.floor(Math.random() * 2) + 1;
       counterEl.textContent = count;
@@ -417,14 +429,11 @@
       e.preventDefault();
       const email = document.getElementById('emailInput').value;
       if (!email || !email.includes('@')) return;
-
       count += 1;
       counterEl.textContent = count;
-
       document.getElementById('formWrap').style.display = 'none';
       document.getElementById('successMsg').style.display = 'block';
-
-      // Wire to Formspree when ready:
+      // Wire to Formspree:
       // fetch('https://formspree.io/f/YOUR_FORM_ID', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
